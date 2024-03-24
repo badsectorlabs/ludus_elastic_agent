@@ -1,0 +1,117 @@
+---
+- name: Stop the role if ludus_elastic_enrollment_token is not set
+  fail:
+    msg: "ludus_elastic_enrollment_token is not set. Please set it in the defaults/main.yml file."
+  when: ludus_elastic_enrollment_token == ""
+
+- name: Check if Elastic agent bin exists on Ludus for Windows targets
+  stat:
+    path: "/opt/ludus/resources/windows/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
+  register: windows_agent_exists
+  delegate_to: localhost
+  when: ansible_os_family == 'Windows'
+
+- name: Check if Elastic agent bin exists on Ludus for Debian/Ubuntu Targets
+  stat:
+    path: "/opt/ludus/resources/linux/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64.tar.gz"
+  register: linux_agent_exists
+  delegate_to: localhost
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Download the Windows Elastic agent if it doesn't exist
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
+    dest: "/opt/ludus/resources/windows/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
+    mode: "0644"
+  delegate_to: localhost
+  when: ansible_os_family == 'Windows' and not windows_agent_exists.stat.exists
+
+- name: Download the Linux Elastic agent if it doesn't exist
+  ansible.builtin.get_url:
+    url: "https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64.tar.gz"
+    dest: "/opt/ludus/resources/linux/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64.tar.gz"
+    mode: "0644"
+  delegate_to: localhost
+  when: (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu') and not linux_agent_exists.stat.exists
+
+- name: Check if Ludus directory exists on Windows target
+  win_shell: Test-Path -Path "C:\\ludus"
+  register: windows_ludus_dir_exists
+  when: ansible_os_family == 'Windows'
+
+- name: Check if Ludus directory exists on Linux target
+  stat:
+    path: "/opt/ludus"
+  register: linux_ludus_dir_exists
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Create Ludus directory on Windows target if it doesn't exist
+  win_shell: New-Item -Path "C:\\ludus" -ItemType Directory -Force
+  when: ansible_os_family == 'Windows' and windows_ludus_dir_exists.stdout == "False"
+
+- name: Create Ludus directory on Linux target if it doesn't exist
+  file:
+    path: "/opt/ludus"
+    state: directory
+  when: (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu') and not linux_ludus_dir_exists.stat.exists
+
+- name: Copy Elastic agent to Windows target
+  win_copy:
+    src: "/opt/ludus/resources/windows/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
+    dest: "C:\\ludus"
+  when: ansible_os_family == 'Windows'
+
+- name: Copy Elastic agent to Linux target
+  copy:
+    src: "/opt/ludus/resources/linux/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64.tar.gz"
+    dest: "/opt/ludus"
+    mode: "0644"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Uninstall Elastic agent if installed on Windows
+  ansible.windows.win_shell: "& 'C:\\Program Files\\Elastic\\Agent\\elastic-agent.exe' uninstall -f"
+  when: ansible_os_family == 'Windows'
+  ignore_errors: true
+  
+- name: Check if elastic-agent is installed on Linux
+  ansible.builtin.shell: 'if [ -f /usr/bin/elastic-agent ]; then echo true; fi'
+  register: elastic_agent_installed_linux
+  changed_when: elastic_agent_installed_linux.stdout == "true"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  ignore_errors: true
+
+- name: Uninstall Elastic agent if installed on Linux
+  ansible.builtin.shell: '/usr/bin/elastic-agent uninstall -f'
+  when: elastic_agent_installed_linux.stdout | default('false') == "true" and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+
+- name: Unzip Elastic agent on Windows target
+  ansible.windows.win_shell: "Expand-Archive -Path 'C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip' -force -DestinationPath 'C:\\ludus'"
+  when: ansible_os_family == 'Windows'
+
+- name: Remove existing Elastic agent directory
+  ansible.builtin.shell: 'rm -rf /opt/ludus/elastic-agent-{{ ludus_elastic_agent_version }}'
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Unzip Elastic agent on Linux target
+  ansible.builtin.shell: 'tar -xzf "/opt/ludus/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64.tar.gz" -C "/opt/ludus"'
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install Elastic agent on Windows target
+  ansible.windows.win_shell: "C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64\\elastic-agent.exe install --url={{ ludus_elastic_fleet_server }} --enrollment-token={{ ludus_elastic_enrollment_token }} --force --insecure"
+  when: ansible_os_family == 'Windows'
+
+- name: Remove existing Elastic Agent directory
+  ansible.builtin.file:
+    path: "/opt/Elastic/Agent"
+    state: absent
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install Elastic agent on Linux target
+  ansible.builtin.command: "/opt/ludus/elastic-agent-{{ ludus_elastic_agent_version }}-linux-x86_64/elastic-agent install  --url={{ ludus_elastic_fleet_server }} --enrollment-token={{ ludus_elastic_enrollment_token }} --force --insecure"
+  become: true
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  
+- name: Tell the user to check the Kibana Dashboard
+  debug:
+    msg: "Check the Kibana Dashboard for the status of the Elastic agent!"
