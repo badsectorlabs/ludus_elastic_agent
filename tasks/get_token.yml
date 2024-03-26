@@ -1,6 +1,6 @@
 - name: Extract vm_name of elastic server
   ansible.builtin.set_fact:
-    ludus_elastic_vm_name: "{{ ludus_vars | selectattr('roles', 'search', 'ludus_elastic_container$') | map(attribute='vm_name') | first }}"
+    ludus_elastic_vm_name: "{{ ludus | selectattr('roles', 'search', 'ludus_elastic_container$') | map(attribute='vm_name') | first }}"
 
 - name: Fail if no elastic server VM found
   ansible.builtin.fail:
