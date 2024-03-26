@@ -66,10 +66,7 @@ ludus:
       snapshot: false
       block_internet: false
     roles:
-      - badsectorlabs.ludus_elastic_agent
-    role_vars:
-      - ludus_elastic_enrollment_token: "<TOKEN>"
-      - ludus_elastic_fleet_server: "https://<IP>:8220" #8220 by default
+      - badsectorlabs.ludus_elastic_agent # role_vars are not required when using ludus
 ```
 
 ## Ludus setup
