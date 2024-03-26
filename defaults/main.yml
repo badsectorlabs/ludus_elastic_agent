@@ -1,5 +1,6 @@
 ---
 ludus_elastic_container_install_path: /opt/elastic_container # on the server VM for automatic token extraction
+ludus_elastic_fleet_port: "8220" # what port does the server VM fleet service listen on (for automatic fleet server URL)
 ludus_elastic_enrollment_token: ""
 ludus_elastic_fleet_server: ""
 ludus_elastic_agent_version: "8.12.2"
