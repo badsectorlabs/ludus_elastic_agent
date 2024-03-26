@@ -19,6 +19,6 @@ galaxy_info:
     - name: Ubuntu
       versions:
         - "focal"
-        - "bionic"   
+        - "bionic"
   galaxy_tags:
-    - elastic-agent
+    - elasticagent
