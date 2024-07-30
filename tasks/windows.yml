@@ -42,8 +42,16 @@
 
 - name: Set full URL for Elastic Fleet server
   ansible.builtin.set_fact:
-    elastic_url: "{{ ludus_elastic_fleet_server }}:{{ ludus_elastic_fleet_port }}"
+    elastic_url: "{{ ludus_elastic_fleet_server }}"
+
+- name: Debug print Elastic agent path
+  ansible.builtin.debug:
+    msg: "Elastic agent path: {{ elastic_agent_path }}"
+
+- name: Debug print Elastic Fleet server URL
+  ansible.builtin.debug:
+    msg: "Elastic Fleet server URL: {{ elastic_url }}"
 
 - name: Install Elastic agent on Windows target
-  ansible.windows.win_shell: >
-    "{{ elastic_agent_path }} install --url={{ elastic_url }} --enrollment-token={{ ludus_elastic_enrollment_token }} --force --insecure"
+  ansible.windows.win_shell: |
+    & "{{ elastic_agent_path }}" install --url="{{ elastic_url }}" --enrollment-token="{{ ludus_elastic_enrollment_token }}" --force --insecure
