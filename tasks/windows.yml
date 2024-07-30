@@ -22,12 +22,36 @@
     src: "{{ ludus_install_directory }}/resources/elastic/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
     dest: "C:\\ludus"
 
+- name: Check if Elastic agent is installed on Windows
+  ansible.windows.win_stat:
+    path: "C:\\Program Files\\Elastic\\Agent\\elastic-agent.exe"
+  register: elastic_agent_installed
+
 - name: Uninstall Elastic agent if installed on Windows
   ansible.windows.win_shell: "& 'C:\\Program Files\\Elastic\\Agent\\elastic-agent.exe' uninstall -f"
-  ignore_errors: true
+  when: elastic_agent_installed.stat.exists
 
 - name: Unzip Elastic agent on Windows target
-  ansible.windows.win_shell: "Expand-Archive -Path 'C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip' -force -DestinationPath 'C:\\ludus'"
+  ansible.windows.win_shell: >
+    Expand-Archive -Path 'C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip' `
+    -force -DestinationPath 'C:\\ludus'
+
+- name: Elastic agent full path on Windows
+  ansible.builtin.set_fact:
+    elastic_agent_path: "C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64\\elastic-agent.exe"
+
+- name: Set full URL for Elastic Fleet server
+  ansible.builtin.set_fact:
+    elastic_url: "{{ ludus_elastic_fleet_server }}"
+
+- name: Debug print Elastic agent path
+  ansible.builtin.debug:
+    msg: "Elastic agent path: {{ elastic_agent_path }}"
+
+- name: Debug print Elastic Fleet server URL
+  ansible.builtin.debug:
+    msg: "Elastic Fleet server URL: {{ elastic_url }}"
 
 - name: Install Elastic agent on Windows target
-  ansible.windows.win_shell: "C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64\\elastic-agent.exe install --url={{ ludus_elastic_fleet_server }} --enrollment-token={{ ludus_elastic_enrollment_token }} --force --insecure"
+  ansible.windows.win_shell: |
+    & "{{ elastic_agent_path }}" install --url="{{ elastic_url }}" --enrollment-token="{{ ludus_elastic_enrollment_token }}" --force --insecure
