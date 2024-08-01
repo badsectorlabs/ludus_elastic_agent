@@ -45,9 +45,9 @@ None.
   roles:
     - badsectorlabs.ludus_elastic_agent
   role_vars:
-    - ludus_elastic_enrollment_token: "<TOKEN>"
-    - ludus_elastic_fleet_server: "https://<IP>:8220" #8220 by default
-    - ludus_elastic_agent_version: "8.12.2"
+    ludus_elastic_enrollment_token: "<TOKEN>"
+    ludus_elastic_fleet_server: "https://<IP>:8220" #8220 by default
+    ludus_elastic_agent_version: "8.12.2"
 ```
 
 ## Example Ludus Range Config
