@@ -1,18 +1,26 @@
-- name: Extract values of elastic server
+- name: Find VM with ludus_elastic_container as a direct role
   ansible.builtin.set_fact:
-    ludus_elastic_vm_vlan: "{{ vm_entry.vlan }}"
-    ludus_elastic_vm_ip_last_octet: "{{ vm_entry.ip_last_octet }}"
-  loop: "{{ ludus }}"
-  loop_control:
-    loop_var: vm_entry
-  when: vm_entry.roles is defined and 'ludus_elastic_container' in vm_entry.roles | join(' ')
+    ludus_elastic_vm: "{{ ludus | selectattr('roles', 'defined') | selectattr('roles', 'contains', 'ludus_elastic_container') | first | default('') }}"
+
+- name: Find VM with ludus_elastic_container as a named role if not found directly
+  ansible.builtin.set_fact:
+    ludus_elastic_vm: >-
+          {{ ludus |
+             json_query("[?contains(roles[].name, 'ludus_elastic_container')]") |
+             first |
+             default(omit) }}
+  when: ludus_elastic_vm | length == 0
+
+- name: Display the found VM object
+  ansible.builtin.debug:
+    var: ludus_elastic_vm
 
 - name: Fail if no elastic server VM found
   ansible.builtin.fail:
     msg: "Could not find any VM that has the *.ludus_elastic_container role in your config"
-  when: ludus_elastic_vm_vlan is undefined or ludus_elastic_vm_ip_last_octet is undefined
+  when: ludus_elastic_vm is undefined or ludus_elastic_vm | length == 0
 
 - name: Set the token
   ansible.builtin.set_fact:
     ludus_elastic_fleet_server:
-      "https://10.{{ range_second_octet }}.{{ ludus_elastic_vm_vlan }}.{{ ludus_elastic_vm_ip_last_octet }}:{{ ludus_elastic_fleet_port }}"
+      "https://10.{{ range_second_octet }}.{{ ludus_elastic_vm.vlan }}.{{ ludus_elastic_vm.ip_last_octet }}:{{ ludus_elastic_fleet_port }}"
