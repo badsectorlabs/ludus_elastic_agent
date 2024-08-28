@@ -5,7 +5,8 @@
 - name: Fail if no elastic server VM found
   ansible.builtin.fail:
     msg: "Could not find any VM that has the *.ludus_elastic_container role in your config"
-  when: ludus_elastic_vm != None
+  when: ludus_elastic_vm is undefined or ludus_elastic_vm == None or ludus_elastic_vm | length == 0
+
 
 - name: Set the token
   ansible.builtin.set_fact:
