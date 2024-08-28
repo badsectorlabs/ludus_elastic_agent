@@ -1,20 +1,11 @@
-- name: Find VM with ludus_elastic_container as a direct role
+- name: Find VM with ludus_elastic_container as a role
   ansible.builtin.set_fact:
-    ludus_elastic_vm: "{{ ludus | selectattr('roles', 'defined') | selectattr('roles', 'contains', 'ludus_elastic_container') | first | default('') }}"
-
-- name: Find VM with ludus_elastic_container as a named role if not found directly
-  ansible.builtin.set_fact:
-    ludus_elastic_vm: >-
-          {{ ludus |
-             json_query("[?contains(roles[].name, 'ludus_elastic_container')]") |
-             first |
-             default(omit) }}
-  when: ludus_elastic_vm | length == 0
+    ludus_elastic_vm: "{{ ludus | search_roles('ludus_elastic_container') }}"
 
 - name: Fail if no elastic server VM found
   ansible.builtin.fail:
     msg: "Could not find any VM that has the *.ludus_elastic_container role in your config"
-  when: ludus_elastic_vm is undefined or ludus_elastic_vm | length == 0
+  when: ludus_elastic_vm != None
 
 - name: Get the enrollment-token from the server
   ansible.builtin.slurp:
