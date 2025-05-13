@@ -31,10 +31,21 @@
   ansible.windows.win_shell: "& 'C:\\Program Files\\Elastic\\Agent\\elastic-agent.exe' uninstall -f"
   when: elastic_agent_installed.stat.exists
 
-- name: Unzip Elastic agent on Windows target
+- name: Get PowerShell version on Windows
+  ansible.windows.win_shell: $PSVersionTable.PSVersion.Major
+  register: ps_version
+
+- name: Unzip Elastic agent on Windows target (PowerShell 5+)
   ansible.windows.win_shell: >
     Expand-Archive -Path 'C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip' `
     -force -DestinationPath 'C:\\ludus'
+  when: ps_version.stdout | int >= 5
+
+- name: Unzip Elastic agent on Windows target (PowerShell 4 and below)
+  ansible.windows.win_shell: >
+    Add-Type -AssemblyName System.IO.Compression.FileSystem;
+    [System.IO.Compression.ZipFile]::ExtractToDirectory('C:\\ludus\\elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip', 'C:\\ludus')
+  when: ps_version.stdout | int < 5
 
 - name: Elastic agent full path on Windows
   ansible.builtin.set_fact:
