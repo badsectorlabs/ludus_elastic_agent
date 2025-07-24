@@ -66,3 +66,8 @@
 - name: Install Elastic agent on Windows target
   ansible.windows.win_shell: |
     & "{{ elastic_agent_path }}" install --url="{{ elastic_url }}" --enrollment-token="{{ ludus_elastic_enrollment_token }}" --force --insecure
+
+- name: Installing Sysmon
+  ansible.builtin.include_tasks:
+    file: sysmon.yml
+  when: ludus_elastic_install_sysmon

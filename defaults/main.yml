@@ -5,3 +5,5 @@ ludus_elastic_fleet_port: "8220" # what port does the server VM fleet service li
 ludus_elastic_enrollment_token: ""
 ludus_elastic_fleet_server: ""
 ludus_elastic_agent_version: "8.12.2"
+ludus_elastic_install_sysmon: false
+ludus_elastic_sysmon_path: "C:\\Program Files (x86)\\Sysmon"
