@@ -35,7 +35,7 @@ Available variables are listed below, along with default values (see `defaults/m
     ludus_elastic_agent_version: ""
 
     # Install Sysmon on any Windows host (Elastic v9.X ingests the log)
-    ludus_elastic_install_sysmon: false
+    ludus_elastic_install_sysmon: ""
 
     # Sysmon install location
     ludus_elastic_sysmon_path: "C:\\Program Files (x86)\\Sysmon"
@@ -74,26 +74,26 @@ ludus:
     roles:
       - badsectorlabs.ludus_elastic_agent # role_vars are not required when using ludus
 ```
-Set the `role_vars` to install Elastic v9.X:
+
+Set the `role_vars` to install Elastic agent v8.X:
 ```yaml
 ludus:
   - vm_name: "{{ range_id }}-jumpbox01"
     hostname: "{{ range_id }}-jumpbox01"
-    template: debian-12-x64-server-template
+    template: win2022-server-x64-template
     vlan: 20
-    ip_last_octet: 25
-    ram_gb: 4
-    cpus: 2
-    linux: true
-    testing:
-      snapshot: false
-      block_internet: false
+    ip_last_octet: 21
+    ram_gb: 6
+    cpus: 4
+    windows:
+      sysprep: true
     roles:
       - badsectorlabs.ludus_elastic_agent
     role_vars:
-      ludus_elastic_agent_version: "9.0.1"
-      ludus_elastic_install_sysmon: true
+      ludus_elastic_agent_version: "8.12.6"
+      ludus_elastic_install_sysmon: false
 ```
+
 ## Ludus setup
 
 ```
