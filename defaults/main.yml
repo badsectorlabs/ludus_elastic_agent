@@ -4,6 +4,6 @@ ludus_elastic_container_install_path: /opt/elastic_container # on the server VM 
 ludus_elastic_fleet_port: "8220" # what port does the server VM fleet service listen on (for automatic fleet server URL)
 ludus_elastic_enrollment_token: ""
 ludus_elastic_fleet_server: ""
-ludus_elastic_agent_version: "8.12.2"
-ludus_elastic_install_sysmon: false
+ludus_elastic_agent_version: "9.0.1"
+ludus_elastic_install_sysmon: ""
 ludus_elastic_sysmon_path: "C:\\Program Files (x86)\\Sysmon"

@@ -70,4 +70,9 @@
 - name: Installing Sysmon
   ansible.builtin.include_tasks:
     file: sysmon.yml
-  when: ludus_elastic_install_sysmon
+  when: |-
+    not ludus_elastic_install_sysmon == false 
+    and ( 
+      ludus_elastic_install_sysmon == true 
+      or ( ludus_elastic_install_sysmon == "" and ludus_elastic_agent_version is match("^[^1-8]\.") ) 
+    )
