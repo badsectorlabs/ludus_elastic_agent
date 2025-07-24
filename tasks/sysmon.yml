@@ -45,7 +45,7 @@
 - name: Installing sysmon
   when: not sysmon_service.exists
   block:
-    - name: Create "{{ ludus_elastic_sysmon_path }}" directory if it doesn't exist
+    - name: Create sysmon install directory if it doesn't exist
       ansible.windows.win_file:
         path: "{{ ludus_elastic_sysmon_path }}"
         state: directory
