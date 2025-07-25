@@ -67,21 +67,14 @@
   ansible.windows.win_shell: |
     & "{{ elastic_agent_path }}" install --url="{{ elastic_url }}" --enrollment-token="{{ ludus_elastic_enrollment_token }}" --force --insecure
 
-- name: Classify sysmon toggle state
-  ansible.builtin.set_fact:
-    sysmon_state: >-
-      {%- set v = ludus_elastic_install_sysmon | default("") | string -%}
-      {%- if v == "" -%}
-        empty
-      {%- elif v | bool -%}
-        true
-      {%- else -%}
-        false
-      {%- endif -%}
-
-- name: Going to install Sysmon
+  # Install sysmon if either:
+  # - the user has set ludus_elastic_install_sysmon to true, regardless of the Elastic agent version
+  # - the user has not set ludus_elastic_install_sysmon and the Elastic agent version is 9.0.0 or higher
+  # Never install sysmon if either:
+  # - the user has set ludus_elastic_install_sysmon to false, regardless of the Elastic agent version
+  # - the user has left ludus_elastic_install_sysmon unset and the Elastic agent version is less than 9.0.0
+- name: Install Sysmon if required
   ansible.builtin.include_tasks: sysmon.yml
-  when: >
-    sysmon_state == "true"
-    or ( sysmon_state == "empty"
-          and (ludus_elastic_agent_version is version("9.0.0", ">=")) )
+  when:
+    - (ludus_elastic_install_sysmon is none and ludus_elastic_agent_version is version('9.0.0', '>='))
+      or (ludus_elastic_install_sysmon | default(true, true))
