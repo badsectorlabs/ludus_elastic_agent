@@ -1,3 +1,10 @@
+- name: Ensure Elastic resources directory exists on Ludus
+  ansible.builtin.file:
+    path: "{{ ludus_install_directory }}/resources/elastic"
+    state: directory
+    mode: "0770"
+  delegate_to: localhost
+
 - name: Check if Elastic agent bin exists on Ludus for Windows targets
   ansible.builtin.stat:
     path: "{{ ludus_install_directory }}/resources/elastic/elastic-agent-{{ ludus_elastic_agent_version }}-windows-x86_64.zip"
