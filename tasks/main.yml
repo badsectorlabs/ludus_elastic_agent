@@ -24,9 +24,9 @@
     file: windows.yml
   when: ansible_os_family == "Windows"
 
-- name: Setup Elastic agent on a Debian based machine
+- name: Setup Elastic agent on a Debian/RedHat based machine
   ansible.builtin.include_tasks:
-    file: debian.yml
+    file: linux.yml
   when: ansible_os_family == 'Debian' or ansible_distribution == 'Ubuntu' or ansible_os_family == 'RedHat'
 
 - name: Tell the user to check the Kibana Dashboard
