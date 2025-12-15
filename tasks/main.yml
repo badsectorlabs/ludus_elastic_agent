@@ -27,7 +27,7 @@
 - name: Setup Elastic agent on a Debian based machine
   ansible.builtin.include_tasks:
     file: debian.yml
-  when: ansible_os_family == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: ansible_os_family == 'Debian' or ansible_distribution == 'Ubuntu' or ansible_os_family == 'RedHat'
 
 - name: Tell the user to check the Kibana Dashboard
   ansible.builtin.debug:
