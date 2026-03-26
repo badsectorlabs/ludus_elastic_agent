@@ -58,7 +58,7 @@
     - name: Copy Sysmon.xml to the target
       ansible.windows.win_copy:
         src: "{{ ludus_install_directory }}/resources/ludus_elastic_agent/sysmon.xml"
-        dest: "C:\\Program Files (x86)\\Sysmon\\sysmon.xml"
+        dest: "C:\\Program Files (x86)\\Sysmon\\Sysmon.xml"
 
     - name: Unzip Sysmon.zip
       ansible.windows.win_powershell:
